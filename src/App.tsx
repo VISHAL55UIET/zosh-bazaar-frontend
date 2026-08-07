@@ -26,27 +26,34 @@ import { homeCategories } from './data/homeCategories';
 import Mobile from './data/Products/mobile';
 
 function App() {
-  const dispatch = useAppDispatch()
-  const { auth, sellerAuth, sellers, user } = useAppSelector(store => store)
-const navigate=useNavigate();
+  const dispatch = useAppDispatch();
+  const { auth, sellerAuth, sellers, user } = useAppSelector(store => store);
+  const navigate = useNavigate();
 
+  // 1. JWT validation logic with safe dependency tracking to prevent infinite 429 loops
   useEffect(() => {
-    if (localStorage.getItem("jwt")) {
-      dispatch(fetchUserProfile({jwt:localStorage.getItem("jwt") || auth.jwt || "",navigate}));
-      dispatch(fetchSellerProfile(localStorage.getItem("jwt") || sellerAuth.jwt))
+    const token = localStorage.getItem("jwt");
+    
+    if (token) {
+      // Sirf tabhi profile fetch karega jab Redux store me data available na ho
+      if (!user.user) {
+        dispatch(fetchUserProfile({ jwt: token, navigate }));
+      }
+      if (!sellers.profile) {
+        dispatch(fetchSellerProfile(token));
+      }
     }
+  }, [dispatch, navigate, user.user, sellers.profile]);
 
-  }, [auth.jwt, sellerAuth.jwt])
-
+  // 2. Static configuration loading (runs once)
   useEffect(() => {
-    dispatch(createHomeCategories(homeCategories))
+    dispatch(createHomeCategories(homeCategories));
     // dispatch(fetchHomePageData())
-  }, [dispatch])
+  }, [dispatch]);
 
   return (
     <ThemeProvider theme={customeTheme}>
       <div className='App' >
-
 
         <Routes>
           {sellers.profile && <Route path='/seller/*' element={<SellerDashboard />} />}
@@ -63,8 +70,6 @@ const navigate=useNavigate();
         </Routes>
         {/* <Footer/> */}
       </div>
-
-
 
     </ThemeProvider>
   );

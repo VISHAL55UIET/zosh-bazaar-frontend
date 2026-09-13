@@ -1,7 +1,6 @@
 import axios from 'axios';
 
-export const API_URL = "https://zosh-bazaar-backend.onrender.com";
-
+export const API_URL = "https://zosh-bazaar-backend-production-3e28.up.railway.app";
 export const api = axios.create({
   baseURL: API_URL,
   headers: {
